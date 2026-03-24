@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 // ─── INITIAL DATA ───────────────────────────────────────────────────────────
 const INITIAL_PRODUCTS = [
@@ -24,7 +24,7 @@ const INITIAL_PRODUCTS = [
   { id: "p20", name: "Paratha", category: "Tandoor", price: 25, cost: 12, unit: "piece" },
 ];
 
-const CATEGORIES = ["All", "Dairy", "Sweets", "Snacks", "Tandoor"];
+// const CATEGORIES = ["All", "Dairy", "Sweets", "Snacks", "Tandoor"];
 const CAT_ICONS = { Dairy: "🥛", Sweets: "🍬", Snacks: "🥨", Tandoor: "🔥", All: "🏪" };
 const CAT_COLORS = {
   Dairy: "#3b82f6",
@@ -221,9 +221,9 @@ export default function App() {
   };
 
   // Today's stats
-  const todayBills = bills.filter(b => b.date?.slice(0, 10) === today());
-  const todaySales = todayBills.reduce((s, b) => s + b.total, 0);
-  const todayProfit = todayBills.reduce((s, b) => s + b.profit, 0);
+  // const todayBills = bills.filter(b => b.date?.slice(0, 10) === today());
+  // const todaySales = todayBills.reduce((s, b) => s + b.total, 0);
+  // const todayProfit = todayBills.reduce((s, b) => s + b.profit, 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f8f5f0", fontFamily: "'Segoe UI', sans-serif" }}>
@@ -531,7 +531,7 @@ function BillingView({ products, filtered, category, setCategory, search, setSea
   );
 }
 const popBtn = { width: 44, height: 44, borderRadius: 10, border: "1.5px solid #e5e0d8", background: "#f8f5f0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#4a3f35", flexShrink: 0, fontSize: 18 };
-const qBtn = { width: 28, height: 28, borderRadius: 6, border: "1px solid #e5e0d8", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#4a3f35", flexShrink: 0 };
+// const qBtn = { width: 28, height: 28, borderRadius: 6, border: "1px solid #e5e0d8", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#4a3f35", flexShrink: 0 };
 
 // ─── PRODUCTS VIEW ────────────────────────────────────────────────────────────
 function ProductsView({ products, setProducts }) {
