@@ -1,4 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect,useCallback, useMemo } from "react";
+import { collection,addDoc, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 
 // ─── INITIAL DATA ───────────────────────────────────────────────────────────
 const INITIAL_PRODUCTS = [
@@ -152,7 +154,18 @@ function printBill(bill) {
 export default function App() {
   const [view, setView] = useState("billing");
   const [products, setProducts] = useLocalStorage("md_products", INITIAL_PRODUCTS);
-  const [bills, setBills] = useLocalStorage("md_bills", []);
+ const [bills, setBills] = useState([]);
+ useEffect(() => {
+  const unsubscribe = onSnapshot(collection(db, "bills"), (snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setBills(data);
+  });
+
+  return () => unsubscribe();
+}, []);
   const [customers, setCustomers] = useLocalStorage("md_customers", []);
   const [cart, setCart] = useState([]);
   const [category, setCategory] = useState("All");
@@ -187,38 +200,38 @@ export default function App() {
   const discountAmt = cartSubtotal * (discount / 100);
   const cartTotal = cartSubtotal - discountAmt;
 
-  const checkoutBill = () => {
-    if (!cart.length) return;
-    const bill = {
-      id: "MD" + Date.now(),
-      date: new Date().toISOString(),
-      items: cart,
-      subtotal: cartSubtotal,
-      discountPct: discount,
-      discountAmt,
-      total: cartTotal,
-      cost: cartCost,
-      profit: cartTotal - cartCost,
-      customer: customerForm.name || customerForm.phone ? { ...customerForm } : null,
-    };
-    setBills(prev => [bill, ...prev]);
-    // Update customer history
-    if (customerForm.phone) {
-      setCustomers(prev => {
-        const ex = prev.find(c => c.phone === customerForm.phone);
-        if (ex) {
-          return prev.map(c => c.phone === customerForm.phone
-            ? { ...c, name: customerForm.name || c.name, bills: [bill.id, ...(c.bills || [])] }
-            : c);
-        }
-        return [{ phone: customerForm.phone, name: customerForm.name, bills: [bill.id] }, ...prev];
-      });
-    }
+const checkoutBill = async () => {
+  if (!cart.length) return;
+
+  const bill = {
+    id: "MD" + Date.now(),
+    date: new Date().toISOString(),
+    items: cart,
+    subtotal: cartSubtotal,
+    discountPct: discount,
+    discountAmt,
+    total: cartTotal,
+    cost: cartCost,
+    profit: cartTotal - cartCost,
+    customer: customerForm.name || customerForm.phone ? { ...customerForm } : null,
+  };
+
+  try {
+    // ✅ FIRST print (important)
     printBill(bill);
+
+    // ✅ THEN save
+    await addDoc(collection(db, "bills"), bill);
+
+    // ✅ reset
     setCart([]);
     setCustomerForm({ name: "", phone: "" });
     setDiscount(0);
-  };
+
+  } catch (error) {
+    console.error("Error saving bill:", error);
+  }
+};
 
   // Today's stats
   // const todayBills = bills.filter(b => b.date?.slice(0, 10) === today());
@@ -929,5 +942,6 @@ function CustomersView({ customers, bills, setCart, setView }) {
         </div>
       )}
     </div>
+    
   );
 }
